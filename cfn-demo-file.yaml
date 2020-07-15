@@ -3,7 +3,9 @@ AWSTemplateFormatVersion: "2010-09-09"
 Parameters:
   SSHKey:
     Type: AWS::EC2::KeyPair::KeyName
-    Description: Name of an existing EC2 KeyPair to enable SSH access to the instance
+    Description: Key pair
+    Default: pasi-key-pair
+
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
@@ -17,6 +19,9 @@ Resources:
   CfnInitInstance:
     Type: AWS::EC2::Instance
     Properties:
+      Tags:
+        - Key: Name
+          Value: JEEEEEEEEEE
       AvailabilityZone: !Ref AZ
       ImageId: !Ref LatestAmiId
       InstanceType: !Ref PreferredInstanceType
@@ -30,11 +35,11 @@ Resources:
             # Get the latest CloudFormation package
             yum update -y aws-cfn-bootstrap
             # Start cfn-init
-            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r MyInstance --region ${AWS::Region}
+            /opt/aws/bin/cfn-init -s ${AWS::StackId} -r CfnInitInstance --region ${AWS::Region}
             # Start cfn-signal to the wait condition
             /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackId} --resource SampleWaitCondition --region ${AWS::Region}
     Metadata:
-      Comment: Install a simple Apache HTTP page
+      Comment: Install a simple http page
       AWS::CloudFormation::Init:
         config:
           packages:
@@ -74,4 +79,3 @@ Resources:
         Timeout: PT2M
         Count: 1
     Type: AWS::CloudFormation::WaitCondition
-
